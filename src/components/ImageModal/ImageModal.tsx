@@ -1,6 +1,6 @@
 import s from "./ImageModal.module.css";
 import Modal from "react-modal";
-import { FaRegHeart, FaWindowClose } from "react-icons/fa";
+import { FaWindowClose } from "react-icons/fa";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { useEffect } from "react";
 import { Image } from "../App/App.types";
@@ -33,8 +33,8 @@ const ImageModal = ({ isOpen, onCloseModal, image }: Props) => {
           <div className={s.imgContainer}>
             <img
               className={s.img}
-              src={image.urls.regular}
-              alt={image.alt_description}
+              src={image.urls?.regular || ""}
+              alt={image.alt_description || "Image"}
             />
           </div>
           <div className={s.moreInform}>
@@ -42,7 +42,7 @@ const ImageModal = ({ isOpen, onCloseModal, image }: Props) => {
               Author:{" "}
               <a
                 className={s.linkAuthor}
-                href={image.user.social.portfolio_url}
+                href={image.user?.social?.portfolio_url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -50,19 +50,11 @@ const ImageModal = ({ isOpen, onCloseModal, image }: Props) => {
               </a>
             </p>
             <p className={s.likes}>
-            <FaRegHeart className={s.iconLikes} />
               Likes: <span className={s.likesSpan}>{image.likes}</span>
             </p>
             {image.description && (
               <p className={s.description}>{image.description}</p>
             )}
-            <ul className={s.tagsList}>
-              {image.tags.map((tag: { title: string }, index: number) => (
-                <li className={s.tagItem} key={index}>
-                  &#35;{tag.title}
-                </li>
-              ))}
-            </ul>
             {image.user.location && (
               <p className={s.location}>Location: {image.user.location}</p>
             )}

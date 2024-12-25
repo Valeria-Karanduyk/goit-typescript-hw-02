@@ -22,3 +22,4 @@ export const fetchImg = async <T>(
     console.log(error.message);
   }
 };
+

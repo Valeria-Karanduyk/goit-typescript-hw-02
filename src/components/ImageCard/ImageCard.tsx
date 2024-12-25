@@ -15,9 +15,10 @@ const ImageCard = ({
       social: { portfolio_url },
     },
   },
-}: Props) => {
+  onClick,
+}: Props& { onClick?: () => void }) => {
   return (
-    <div className={s.box}>
+    <div className={s.box} onClick={onClick}>
       <img
         className={s.img}
         src={small}

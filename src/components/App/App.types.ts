@@ -17,3 +17,5 @@ export interface Image {
     location: string;
   };
 }
+
+
