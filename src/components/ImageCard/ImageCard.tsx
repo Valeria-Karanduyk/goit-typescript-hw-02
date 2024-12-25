@@ -26,13 +26,13 @@ const ImageCard = ({
           />
           <div className={s.container}>
               <p className={s.textPhoto}>
-                  <strong>Author</strong>
+                  ✍️<strong>Author</strong>
                   <a href={portfolio_url} target="_blank" rel="noopener noreferrer">
             {name}
           </a>
               </p>
     <p className={s.textPhoto}>
-          <strong>Likes: </strong>
+          ❤️<strong>Likes: </strong>
           {likes}
         </p>
           </div>
