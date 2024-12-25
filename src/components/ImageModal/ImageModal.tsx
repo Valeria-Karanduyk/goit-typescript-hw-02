@@ -8,9 +8,9 @@ import { Image } from "../App/App.types";
 type Props = {
   isOpen: boolean;
   image: Image | null;
-  onClose: () => void;
+  onCloseModal: () => void;
 }
-const ImageModal = ({ isOpen, onClose, image }: Props) => {
+const ImageModal = ({ isOpen, onCloseModal, image }: Props) => {
   useEffect(() => {
     if (isOpen) {
       disableBodyScroll(document.body);
@@ -23,9 +23,9 @@ const ImageModal = ({ isOpen, onClose, image }: Props) => {
       overlayClassName={s.overlay}
       className={s.content}
       isOpen={isOpen}
-      onRequestClose={onClose}
+      onRequestClose={onCloseModal}
     >
-      <button className={s.btn} onClick={onClose}>
+      <button className={s.btn} onClick={onCloseModal}>
         <FaWindowClose className={s.icon} />
       </button>
       {image && (

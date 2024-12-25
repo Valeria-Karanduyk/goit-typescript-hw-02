@@ -1,138 +1,129 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { fetchImg } from "../../services/api";
+import { useEffect, useState } from "react";
+import Modal from "react-modal";
+import toast, { Toaster } from "react-hot-toast";
+
+import SearchBar from "../SearchBar/SearchBar";
+import Loader from "../Loader/Loader";
+import ImageGallery from "../ImageGallery/ImageGallery";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
+import LoaderMore from "../Loader/LoaderMore";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import ImageModal from "../ImageModal/ImageModal";
+import { Image } from "./App.types";
+
+interface ImageData {
+  total_pages: number;
+  total: number;
+  results: Image[];
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [images, setImages] = useState<Image[]>([]); 
+  const [page, setPage] = useState<number>(1); 
+  const [totalPages, setTotalPages] = useState<number>(1); 
+  const [search, setSearch] = useState<string>(""); 
+  const [error, setError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false); 
+  const [loadingMore, setLoadingMore] = useState<boolean>(false); 
+  const [isSearching, setIsSearching] = useState<boolean>(false); 
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    Modal.setAppElement("#root");
+  }, []);
+
+  const handleQuery = async (query: string): Promise<void> => {
+    try {
+      setLoading(true);
+      setIsSearching(true);
+      setImages([]);
+      setPage(1);
+      setSearch(query);
+
+      const dataImg: ImageData | undefined = await fetchImg(query, 1);
+      console.log(dataImg);
+      if (!dataImg) {
+        throw new Error("No data received from the API");
+      }
+
+      setTotalPages(dataImg.total_pages);
+      setImages(dataImg.results);
+
+      if (query.trim() === "") {
+        toast.error("The search field cannot be empty!");
+        return;
+      } else if (!dataImg.total) {
+        toast(
+          "Sorry, we have not found the photos for your request. Try to write it differently.",
+          {
+            duration: 5000,
+          }
+        );
+      } else {
+        toast.success(`Wow! We found ${dataImg.total} pictures`);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+      setIsSearching(false);
+    }
+  };
+
+  const handleLoadMore = async (): Promise<void> => {
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const dataImages: ImageData | undefined = await fetchImg(search, nextPage);
+
+      setImages((prevImages: Image[]): Image[] => {
+        if (!dataImages) {
+          throw new Error("No data received from the API");
+        }
+
+        return [...prevImages, ...dataImages.results];
+      });
+      setPage(nextPage);
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const isVisible = (): boolean => {
+    return totalPages !== 0 && totalPages !== page && !loadingMore;
+  };
+
+  const openModal = (image: Image): void => {
+    setSelectedImage(image);
+    setModalIsOpen(true);
+  };
+  const closeModal = (): void => setModalIsOpen(false);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <SearchBar onSubmit={handleQuery} />
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+      />
+      {loading && <Loader />}
+      {error && <ErrorMessage />}
+      <ImageGallery imageList={images} openModal={openModal} />
+      {!loadingMore && !isSearching && (
+        <LoadMoreBtn onClick={handleLoadMore} isVisible={isVisible} />
+      )}
+      {loadingMore && <LoaderMore />}
+      <ImageModal
+        isOpen={modalIsOpen}
+        image={selectedImage}
+        onCloseModal={closeModal}
+      />
     </>
-  )
+  );
 }
 
-export default App
-
-
-
-// import { fetchImg } from "../../services/api";
-// import SearchBar from "../SearchBar/SearchBar";
-// import { useEffect, useState } from "react";
-// import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
-// import Loader from "../Loader/Loader";
-// import ErrorMessage from "../ErrorMessage/ErrorMessage";
-// import ImageGallery from "../ImageGallery/ImageGallery";
-// import ImageModal from "../ImageModal/ImageModal";
-
-// const App = () => {
-//   const [firstLoad, setFirstLoad] = useState<boolean>(true);
-//   const [query, setQuery] = useState<string>("");
-//   const [perPage, setPerPage] = useState<number>(10);
-//   const [page, setPage] = useState<number>(0);
-//   const [pagination, setPagination] = useState<boolean>(false);
-//   const [totalPage, setTotalPages] = useState<number>(0);
-//   const [loader, setLoader] = useState<boolean>(false);
-//   const [error, setError] = useState<boolean>(false);
-//   const [results, setResults] = useState<[]>([]);
-//   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-//   const [selectedImage, setSelectedImage] = useState<object>({});
-
-//   const handleQuery = (query, perPage) => {
-//     if (perPage !== "") setPerPage(perPage);
-//     setFirstLoad(true);
-//     setQuery(query);
-//     setPagination(false);
-//     setPage(1);
-//     return;
-//   };
-
-//   const handleLoadMore = () => {
-//     setPage(page + 1);
-//     setPagination(true);
-//     return;
-//   };
-
-//   const handleModal = (imageData) => {
-//     setSelectedImage(imageData);
-//     toggleIsOpen();
-//     return;
-//   };
-
-//   const toggleIsOpen = () => {
-//     setIsModalOpen(!isModalOpen);
-//   };
-
-//   useEffect(() => {
-//     if (!query) return;
-//     (async () => {
-//       try {
-//         setLoader(true);
-//         setError({ isActive: false, errCode: "", errMsg: "" });
-//         setTotalPages(0);
-//         const data = await fetchImg(query, perPage, page);
-//         if (pagination) {
-//           setResults((prev) => [...prev, ...data.results]);
-//           setTotalPages(data.total_pages);
-//           return;
-//         }
-//         setTotalPages(data.total_pages);
-//         setResults(data.results);
-//       } catch (err) {
-//         setError({
-//           isActive: true,
-//           errCode: err.status,
-//           errMsg: err?.response.data.errors.join(", "),
-//         });
-//       } finally {
-//         setLoader(false);
-//         setFirstLoad(false);
-//       }
-//     })();
-//   }, [query, page, pagination, perPage]);
-
-//   return (
-//     <>
-//       <SearchBar handleQuery={handleQuery} query={query} id="gallery" />
-//       {firstLoad ? (
-//         ""
-//       ) : results.length > 0 ? (
-//         <ImageGallery data={results} handleModal={handleModal} />
-//       ) : (
-//         <h2>Images not found...</h2>
-//       )}
-//       {error.isActive && (
-//         <ErrorMessage code={error.errCode} message={error.errMsg} />
-//       )}
-//       {loader && <Loader />}
-//       {page < totalPage && <LoadMoreBtn handleLoadMore={handleLoadMore} />}
-//       <ImageModal
-//         isOpen={isModalOpen}
-//         onClose={toggleIsOpen}
-//         selectedImage={selectedImage}
-//       />
-//     </>
-//   );
-// };
-
-// export default App;
+export default App;

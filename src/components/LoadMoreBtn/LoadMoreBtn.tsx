@@ -2,13 +2,13 @@ import s from "./LoadMoreBtn.module.css";
 
 type Props = {
   onClick: () => void;
-  handleLoadMore: () => boolean;
+  isVisible: () => boolean;
 };
 
-const LoadMoreBtn = ({ onClick,handleLoadMore }: Props) => {
+const LoadMoreBtn = ({ onClick,isVisible }: Props) => {
     return (
     <div className={s.box}>
-    {handleLoadMore() && (
+    {isVisible() && (
     <button className={s.btn} onClick={onClick}>
       Load more
     </button>
