@@ -42,11 +42,13 @@ function App() {
       setPage(1);
       setSearch(query);
 
-      const dataImg: ImageData | undefined = await fetchImg(query, 1);
-      console.log(dataImg);
-      if (!dataImg) {
-        throw new Error("No data received from the API");
-      }
+    //   const dataImg = await fetchImg<ImageData>(query, 1);
+    //   if (!dataImg) {
+    //   throw new Error("No data received from the API");
+    // }
+      //   console.log(dataImg);
+      
+      const dataImg = (await fetchImg<ImageData>(query, 1)) ?? { total_pages: 0, total: 0, results: [] };
 
       setTotalPages(dataImg.total_pages);
       setImages(dataImg.results);
@@ -72,26 +74,43 @@ function App() {
     }
   };
 
+  // const handleLoadMore = async (): Promise<void> => {
+  //   try {
+  //     setLoadingMore(true);
+  //     const nextPage = page + 1;
+  //     const dataImages = await fetchImg<ImageData>(search, nextPage);
+
+
+  //     setImages((prevImages: Image[]): Image[] => {
+  //       if (!dataImages) {
+  //         throw new Error("No data received from the API");
+  //       }
+
+  //       return [...prevImages, ...dataImages.results];
+  //     });
+  //     setPage(nextPage);
+  //   } catch (error) {
+  //     setError(true);
+  //   } finally {
+  //     setLoadingMore(false);
+  //   }
+  // };
+
   const handleLoadMore = async (): Promise<void> => {
-    try {
-      setLoadingMore(true);
-      const nextPage = page + 1;
-      const dataImages: ImageData | undefined = await fetchImg(search, nextPage);
+  try {
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const dataImages = await fetchImg<ImageData>(search, nextPage) ?? { total_pages: 0, total: 0, results: [] };
 
-      setImages((prevImages: Image[]): Image[] => {
-        if (!dataImages) {
-          throw new Error("No data received from the API");
-        }
-
-        return [...prevImages, ...dataImages.results];
-      });
-      setPage(nextPage);
-    } catch (error) {
-      setError(true);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+    setImages((prevImages: Image[]) => [...prevImages, ...dataImages.results]);
+    setPage(nextPage);
+  } catch (error) {
+    console.error("Error loading more images:", error);
+    setError(true);
+  } finally {
+    setLoadingMore(false);
+  }
+};
 
   const isVisible = (): boolean => {
     return totalPages !== 0 && totalPages !== page && !loadingMore;

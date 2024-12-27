@@ -6,20 +6,19 @@ axios.defaults.baseURL = `https://api.unsplash.com/`;
 export const fetchImg = async <T>(
   searchImg: string,
   pageNumber: number
-): Promise<T | undefined> => {
-  const params: Record<string, string> = {
-    query: searchImg,
-    page: pageNumber.toString(),
-    per_page: "10",
-    client_id: API_KEY,
-  };
+): Promise<T> => {
   try {
-    const response = await axios.get(
-      `search/photos/?${new URLSearchParams(params).toString()}`
-    );
+    const response = await axios.get<T>("search/photos/", {
+      params: {
+        query: searchImg,
+        page: pageNumber,
+        per_page: 10,
+        client_id: API_KEY,
+      },
+    });
     return response.data;
   } catch (error: any) {
-    console.log(error.message);
+    console.error("Error fetching images:", error.message);
+    throw new Error("Failed to fetch images from the API.");
   }
 };
-
